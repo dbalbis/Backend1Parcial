@@ -1,9 +1,8 @@
-const express = require('express');
+import express from 'express';
 const app = express();
 const port = process.env.PORT || 8080;
-const productsRouter = require('./routes/productsRouter.js');
-const cartRouter = require('./routes/cartRouter.js');
-const fs = require('fs');
+import productsRouter from './routes/productsRouter.js';
+import cartRouter from './routes/cartRouter.js';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));

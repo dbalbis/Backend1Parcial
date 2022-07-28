@@ -1,27 +1,15 @@
-const { Router } = require('express');
+import { Router } from 'express';
 const router = Router();
 
-const ContenedorProductos = require('../contenedor/contenedor');
+import { productsModel } from '../daos/index.js';
 
-/* NUEVA CLASE */
-const Products = new ContenedorProductos('prodData.json');
-
-/* adminChecker */
-
-function adminChecker(req, res, next) {
-  const rol = req.body.rol;
-  if (rol == 'admin') {
-    next();
-  } else {
-    res.status(401).send('No tienes permisos para acceder!');
-  }
-}
+import adminChecker from '../middlewares/adminChecker.js';
 
 /* GET TODOS LOS PRODUCTOS */
 
 router.get('/', async (req, res) => {
   try {
-    const respuesta = await Products.getAll();
+    const respuesta = await productsModel.getAll();
     if (!respuesta) {
       res.status(404).json({ message: 'Todavia no hay productos!' });
     } else {
@@ -37,7 +25,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const producto = await Products.getById(id);
+    const producto = await productsModel.getById(id);
     if (!producto) {
       res.status(404).json({ message: 'Not Found!' });
     } else {
@@ -47,37 +35,25 @@ router.get('/:id', async (req, res) => {
     console.log(error);
     res.json({ message: 'Hubo un error' });
   }
-
-  const id = Number(req.params.id);
-  const producto = await Products.getById(id);
-  if (!producto) {
-    res.status(404).json({ message: 'Not Found!' });
-  } else {
-    res.status(200).json(producto);
-  }
 });
 
 /* POST PRODUCTOS */
 router.post('/', adminChecker, async (req, res) => {
   try {
-    const { title, desc, price, stock, thumbnail, codigo } = req.body;
+    const { nombre, descripcion, codigo, foto, precio, stock } = req.body;
     const producto = {
-      title,
+      nombre,
+      descripcion,
       codigo,
-      desc,
-      price,
+      foto,
+      precio,
       stock,
-      thumbnail,
       timestamp: Date.now(),
     };
 
-    if (isNaN(Number(price))) {
-      res.status(400).json({ message: 'Precio debe ser un numero!' });
-    } else {
-      const nuevoProducto = await Products.save(producto);
+    const nuevoProducto = await productsModel.save(producto);
 
-      res.status(201).json({ message: 'Producto creado!', nuevoProducto });
-    }
+    res.status(201).json({ message: 'Producto creado!', nuevoProducto });
   } catch (error) {
     console.log(error);
     res.json({ message: 'Hubo un error' });
@@ -88,27 +64,27 @@ router.post('/', adminChecker, async (req, res) => {
 router.put('/:id', adminChecker, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { title, desc, price, stock, thumbnail, codigo } = req.body;
+    const { nombre, descripcion, codigo, foto, precio, stock } = req.body;
     const prod = {
       id,
-      title,
-      desc,
-      price,
-      stock,
-      thumbnail,
+      nombre,
+      descripcion,
       codigo,
+      foto,
+      precio,
+      stock,
     };
-    if (isNaN(Number(price))) {
+    if (isNaN(Number(precio))) {
       res.status(400).json({ message: 'Precio debe ser un numero!' });
     } else {
-      const producto = await Products.editProduct(
+      const producto = await productsModel.editProduct(
         id,
-        title,
-        desc,
-        price,
-        stock,
-        thumbnail,
-        codigo
+        nombre,
+        descripcion,
+        codigo,
+        foto,
+        precio,
+        stock
       );
       if (!producto) {
         res.status(404).json({ message: 'Not Found!' });
@@ -125,7 +101,7 @@ router.put('/:id', adminChecker, async (req, res) => {
 /* Eliminar un Producto */
 router.delete('/:id', adminChecker, async (req, res) => {
   const id = Number(req.params.id);
-  const producto = await Products.deleteProduct(id);
+  const producto = await productsModel.deleteProduct(id);
   if (!producto) {
     res.status(404).json({ message: 'Not Found!' });
   } else {
@@ -134,4 +110,4 @@ router.delete('/:id', adminChecker, async (req, res) => {
 });
 
 /* Export Router */
-module.exports = router;
+export default router;

@@ -1,7 +1,9 @@
-const { Router } = require('express');
+import { Router } from 'express';
 const router = Router();
 
-const ContenedorProductos = require('../contenedor/contenedor');
+import { cartModel } from '../daos/index.js';
+
+import ContenedorProductos from '../contenedores/contenedor.js';
 
 /* NUEVA CLASE */
 const Cart = new ContenedorProductos('prodCart.json');
@@ -15,8 +17,8 @@ router.post('/', async (req, res) => {
       timestamp: Date.now(),
       productos: [],
     };
-    const newCart = await Cart.save(cart);
-    id = newCart.id;
+    const newCart = await cartModel.save(cart);
+    let id = newCart.id;
     res
       .status(201)
       .json({ message: `Carrito creado! el id es ${id}`, newCart });
@@ -93,4 +95,4 @@ router.delete('/:id/productos/:idProduct', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
